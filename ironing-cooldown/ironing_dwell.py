@@ -45,18 +45,23 @@ def log(msg):
     print(msg, file=sys.stderr)
 
 
-def dwell_block(d, tag, fans):
-    """G-code voor één koelpauze van d seconden; leeg als d <= 0."""
+def dwell_block(d, fans, header=None):
+    """G-code voor één koelpauze van d seconden; leeg als d <= 0.
+
+    header != None -> omsluit met ';>>> ... / ;<<< ...' markers (per-pass modus).
+    header is None  -> kale mechaniek (segment-modus zet zelf een zone-comment)."""
     if d <= 0:
         return []
-    return [f"; >>> {SCRIPT} {tag} dwell {d}s\n",
-            "M400\n", "M83\n", f"G1 E-{RETRACT} F2100\n",
+    body = ["M400\n", "M83\n", f"G1 E-{RETRACT} F2100\n",
             "G91\n", f"G1 Z{Z_HOP} F1200\n", "G90\n",
             f"M106 P1 S{FAN_COOL}\n", "M106 P2 S255\n",
             f"G4 S{d}\n",
             f"M106 P1 S{fans['1']}\n", f"M106 P2 S{fans['2']}\n",
             "G91\n", f"G1 Z-{Z_HOP} F1200\n", "G90\n",
-            f"G1 E{RETRACT} F2100\n", f"; <<< {SCRIPT} {tag}\n"]
+            f"G1 E{RETRACT} F2100\n"]
+    if header is None:
+        return body
+    return [f"; >>> {SCRIPT} {header} dwell {d}s\n"] + body + [f"; <<< {SCRIPT} {header}\n"]
 
 
 def seg_dwell(s):
@@ -89,23 +94,24 @@ while i < len(src):
         moves = [k for k, l in enumerate(body) if RE_MOVE.match(l)]
 
         if SEGMENTS > 1 and len(moves) >= SEGMENTS:
-            # eerste move-regel van elk segment -> daarvóór de dwell inlassen
+            # eerste move-regel van elk segment -> daarvóór een zone-comment (+ evt. dwell)
             bounds = {moves[(s * len(moves)) // SEGMENTS]: s for s in range(SEGMENTS)}
             for k, l in enumerate(body):
                 if k in bounds:
                     s = bounds[k]
                     d = seg_dwell(s)
-                    tag = f"seg {s+1}/{SEGMENTS} (ironing #{n}, obj {obj}, Z{z})"
-                    blk = dwell_block(d, tag, fsnap)
+                    cum = sum(seg_dwell(j) for j in range(s + 1))
+                    out.append(f"; === {SCRIPT} seg {s+1}/{SEGMENTS}: dwell {d}s "
+                               f"(cum {cum}s) (ironing #{n}, obj {obj}, Z{z}) ===\n")
+                    blk = dwell_block(d, fsnap)
                     if blk:
                         injected += 1
-                    log(f"  ironing #{n} seg {s+1}/{SEGMENTS} -> dwell {d}s")
+                    log(f"  ironing #{n} seg {s+1}/{SEGMENTS} -> dwell {d}s (cum {cum}s)")
                     out += blk
                 out.append(l)
         else:
             d = DWELLS[(n - 1) % len(DWELLS)]
-            tag = f"cool-down (ironing #{n}, obj {obj}, Z{z})"
-            blk = dwell_block(d, tag, fsnap)
+            blk = dwell_block(d, fsnap, header=f"cool-down (ironing #{n}, obj {obj}, Z{z})")
             if blk:
                 injected += 1
             log(f"  ironing #{n} -> dwell {d}s")
