@@ -55,18 +55,30 @@ swatch-test voorspelde. Daarmee is duidelijk: een 20×20-vlakje + meteen ironen 
 **verkeerd beeld** van wat er op een veel groter ironing-oppervlak gebeurt. De flow/speed die
 op een swatch het mooiste resultaat geeft, houdt op een groot vlak geen stand.
 
-## Waarom waarschijnlijk: de starttemperatuur verschilt
+## Waarom waarschijnlijk: thermisch, via blootstellingstijd
 
 Op een klein vlak is de toplaag nog overal warm als de ironing-pass begint. Op een groot vlak
-begint het ironen tientallen seconden na het eerste top-infill-spoor — de starttemperatuur
-loopt dan sterk uiteen over het oppervlak, en verschilt bovendien per printformaat. Ironing
-is gevoelig voor die starttemperatuur, dus verschuift het optimale flow/speed-punt mee met de
-grootte van het vlak.
+begint het ironen tientallen seconden na het eerste top-infill-spoor, en de pass zelf duurt
+lang — de starttemperatuur loopt daardoor sterk uiteen en het oppervlak koelt sterk af.
 
-*Concurrerende verklaring (drukverval):* ironing extrudeert bij 10–50% flow extreem weinig.
-Op een korte swatch teert de pass nog op de restdruk in de nozzle van het top-infill; op een
-lang pad zakt die druk in en irone je aan het eind droog. Visueel bijna identiek aan "te koud".
-In het achterhoofd houden, maar de starttemperatuur is de eerste verdachte.
+**Observatie op de referentieprint (Ø ~220 mm, rond):** de ironing loopt in rechte parallelle
+lijnen over de cirkel bij **10 mm/s** (extreem traag). Al na ~20 mm de diameter in — waar de
+lijnen door de cirkelvorm oplopen tot ~120 mm (klopt: koorde bij 20 mm inzet = 2·√(110²−90²) ≈
+126 mm) — werd het oppervlak steeds donkerder tot het filmpje opbrak en onregelmatig werd. Bij
+10 mm/s duurt de pass zó lang dat de toplaag ondertussen enorm afkoelt; vrijwel alles wordt op
+een koud substraat gestreken. Dit wijst sterker naar **thermisch** dan naar drukverval.
+
+**De valstrik van de swatch-test:** op bijna alle swatches wint **10 mm/s + 10% flow** (PLA én
+PETG). Maar juist die lage snelheid kost op een 20×20-vlakje bijna geen afkoeling (het is zo
+klaar) terwijl het op een groot vlak de afkoeling *veroorzaakt*. De swatch beloont dus een
+instelling die op grote vlakken faalt — de test stuurt qua snelheid de verkeerde kant op. Als de
+dwell-test dit bevestigt, invalideert het de eerdere swatch-winnaars en is "altijd een dwell voor
+stabiele resultaten" de logische conclusie.
+
+*Concurrerende verklaring (drukverval):* ironing extrudeert bij 10–50% flow extreem weinig; op
+een lang pad kan de druk inzakken en irone je droog — visueel bijna identiek aan "te koud".
+Mooie discriminator: een koelpauze maakt een *thermisch* probleem juist érger en raakt een
+*flow*-probleem nauwelijks. Sinds de Ø220-observatie is thermisch de eerste verdachte.
 
 ## Doel van dit script: stabiliseren, niet alleen meten
 
@@ -79,6 +91,20 @@ ironing-snelheid overal een gelijke warmte-inbreng krijgen.
 Het dubbelt als **discriminator**: reproduceert een koelpauze op een kleine swatch het probleem
 van het grote vlak → dan is temperatuur de dominante variabele. Verandert er niets → richting
 flow zoeken (ironing-flow omhoog, ironing-speed omlaag).
+
+**De dwell mikt op temperatuur, niet op pass-duur.** Het doel is de swatch op dezelfde
+oppervlaktetemperatuur brengen die het grote vlak heeft op het moment van ironen — niet de duur
+van de grote ironing-pass namaken. Een dun toplaagje koelt snel naar steady-state, dus het juiste
+getal is empirisch: zoek de dwell waarbij een swatch er net zo slecht uitziet als de grote print.
+
+### Segment-modus (afkoel-verloop binnen één swatch)
+
+Naast één dwell per pass kan het script elke ironing-pass in `SEGMENTS` stukken hakken en vóór
+elk stuk oplopend meer dwell inlassen (`SEG_DWELLS`). Zo zie je het afkoel-verloop van een groot
+vlak gecomprimeerd in één swatch. Een pauze koelt het hele *nog-niet-gestreken* deel, dus de
+koeling is **cumulatief**: segment k ondergaat `som(SEG_DWELLS[:k+1])`. Bij `[0,5,10,15,20]` is dat
+`0 / 5 / 15 / 30 / 50 s`. Kanttekening: elke split geeft een klein naadje (retract); voor diagnose
+handig (markeert de zones), anders `RETRACT` verlagen. `SEGMENTS = 1` = de oude één-dwell-modus.
 
 ## Waarom een post-processing script en niet een Bambu Studio-instelling
 
@@ -254,15 +280,15 @@ grep -m5 "FEATURE:" ~/Downloads/plate_1.gcode
 - **Crash = generieke exportfout** die niets over de oorzaak zegt. Test daarom los op
   een kopie van een geëxporteerde G-code:
   ```bash
-  python3 ~/scripts/ironing_dwell.py ~/Downloads/plate_1_kopie.gcode
+  python3 ~/Projects/3d-printing/ironing-cooldown/ironing_dwell.py ~/Downloads/plate_kopie.gcode
   ```
-- **Post-processing loopt bij "Export G-code file"** (bevestigd op 2026-08-11: de export
-  bevatte de injecties). Of het ook meegaat bij direct naar de printer sturen is nog
-  **onverifieerd** — zoek in de verzonden file naar `cool-down`. Zit het er niet in:
-  exporteer de G-code en print van SD.
+- **Post-processing draait bij élke slice** op Bambu Studio's temp-G-code (bevestigd
+  2026-08-11), dus zowel "Export G-code file" als direct "Print" krijgen de injecties.
+- **Niet dubbel draaien.** BS draait het al bij slice; niet daarná nog handmatig over
+  dezelfde file (dubbele blokken, herkenbaar aan gelijk `ironing #`-nummer).
 - **Spaties in paden** breken het zonder quotes.
-- **25 swatches × 20 s ≈ 8 minuten extra**: elke swatch heeft zijn eigen ironing-blok en
-  krijgt dus zijn eigen dwell.
+- **Extra printtijd.** In segment-modus krijgt elke swatch de som van `SEG_DWELLS`
+  (bij `[0,5,10,15,20]` = 50 s/swatch). Reken bij een testplaat even door.
 - **`M73` resterende-tijd klopt niet meer.** Onschuldig.
 
 ## Volgende stappen
@@ -273,15 +299,20 @@ grep -m5 "FEATURE:" ~/Downloads/plate_1.gcode
 3. ~~Post-processing script instellen in Bambu Studio.~~ **Klaar** — hook draait aantoonbaar bij
    export. *Nog te doen:* controleren of het als eigen process-preset is opgeslagen (anders bij
    preset-wissel/herstart weg).
-4. **De eigenlijke test (bewaard voor later):** flow en speed vastzetten op de winnaar uit de
-   5×5, dan **vijf
-   patches van 20×20 mm** printen met `DWELLS = [0, 5, 15, 30, 60]`. Elk ironing-blok
-   krijgt een andere pauze; het script logt welk object welke dwell kreeg zodat de mapping
-   bekend is. Volgorde van de ironing-blokken = slice-volgorde, dus controleren via de
-   geïnjecteerde comments in de G-code.
-5. Loopt de kwaliteit monotoon mee met de dwell → temperatuur is de variabele, en je weet
-   meteen hoeveel koeltijd nodig is. Blijft het vlak → richting flow zoeken
-   (ironing-flow omhoog, ironing-speed omlaag).
+4. **Huidige test (2026-08-11):** beperkte set van **9 iets grotere swatches (30×30 mm)** met
+   grotere sprongen in de range, om de snelheid erin te houden:
+   `[{50,50%},{40,40%},{30,30%},{20,20%},{10,10%},{50,10%},{40,20%},{20,40%},{10,50%}]`
+   (mm/s, flow). Segment-modus **aan** (`SEGMENTS = 5`, `SEG_DWELLS = [0,5,10,15,20]`), zodat
+   elke swatch tegelijk het afkoel-verloop toont. Zo lees je in één plaat `(speed × flow) ×
+   koeltrap`.
+5. Aflezen: zakt de kwaliteit binnen een swatch weg naarmate de (cumulatieve) dwell oploopt →
+   temperatuur is de dominante variabele, en je ziet hoeveel koeltijd het omslagpunt is.
+   Verandert er weinig → richting flow (ironing-flow omhoog, ironing-speed omlaag). Reproduceert
+   geen enkele koeltrap de grote-print-fout → gradient opschalen (`SEG_DWELLS` grotere stappen,
+   het echte vlak koelde minuten).
+6. **Voor later:** Makerworld-voorbeelden raden voor PETG nóg lagere speed/flow aan — buiten de
+   huidige range, apart onderzoeken. En: op de échte grote print juist *sneller* ironen
+   (30–50 mm/s) met fan uit/laag testen als directe productie-fix van de thermische oorzaak.
 
 ## Beantwoorde vragen (2026-08-11)
 
