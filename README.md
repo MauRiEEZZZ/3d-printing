@@ -30,7 +30,10 @@ een groot vlak.
   /usr/bin/python3 "/Users/<username>/scripts/ironing_dwell.py"
   ```
   Belangrijkste knoppen bovenin het script: `DWELLS` (seconden; meerdere waarden =
-  cyclisch per ironing-blok), `Z_HOP`, `RETRACT`, `FAN_COOL`.
+  cyclisch per ironing-blok), `Z_HOP`, `RETRACT`, `FAN_COOL`. Het script schrijft een
+  header-comment met de gebruikte instellingen in de G-code (na `HEADER_BLOCK_END`) en
+  markeert elk ingevoegd blok met `; >>> ironing_dwell.py cool-down ...`, zodat in de
+  G-code zichtbaar is wat door het script is toegevoegd.
 - `ironing-dwell-handoff.md` — volledige achtergrond, ontwerpkeuzes, geverifieerde feiten
   en volgende stappen.
 
