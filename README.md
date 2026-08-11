@@ -11,11 +11,17 @@ Voornamelijk gericht op een **Bambu Lab P2S** met Bambu Studio.
 
 ## ironing-cooldown
 
-Onderzoek naar waarom ironing-instellingen die op een kleine swatch mooi zijn, op grote
-vlakken (20×20 mm) niet standhouden. Hypothese: de toplaag is op een groot vlak al deels
-afgekoeld voordat de ironing-pass begint. Het script injecteert een instelbare `G4`-dwell
-(met retract, Z-hop en fans op vol) net vóór elke ironing-pass, zodat de invloed van
-koeltijd geïsoleerd getest kan worden.
+De ironing-kalibratietest print kleine vlakjes van 20×20 mm en irone daar direct achteraan.
+Een echte print van ~230 mm doorsnede gaf echter een totaal ander resultaat: het kleine
+vlakje + meteen ironen is niet representatief voor een groot oppervlak. Waarschijnlijke
+oorzaak: op een groot vlak is de toplaag bij het begin van de ironing-pass al deels
+afgekoeld, terwijl op een swatch alles nog warm is — de starttemperatuur verschilt dus met
+de vlakgrootte.
+
+Doel van het script: ironing **reproduceerbaar** maken door vóór elke pass een instelbare
+`G4`-rustperiode (met retract, Z-hop en fans aan) in te lassen, zodat elk vlak bij nagenoeg
+dezelfde starttemperatuur begint. Zo is wat je op een klein vlak afstelt representatief voor
+een groot vlak.
 
 - `ironing_dwell.py` — het post-processing script. Instellen in Bambu Studio onder
   *proces-preset → Others → Post-processing Scripts* (vervang `<username>` door je

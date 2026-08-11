@@ -47,24 +47,38 @@ loopt van 10% t/m 50% en ironing-**speed** van 10 t/m 50 mm/s (bevestigd, zie bo
 
 ## Het probleem
 
-De test is niet representatief voor grote vlakken (bijv. 200×200 mm). De waarden die
-op een swatch het mooiste resultaat geven, houden op een groot oppervlak geen stand.
+De ironing-kalibratietest gebruikt kleine vlakjes van **20×20 mm**: de toplaag printen en
+er direct achteraan de ironing-pass. Lang aangenomen dat dit de waarheid gaf.
 
-## Hypothese en concurrerende verklaring
+Maar een echte print van **~230 mm doorsnede** gaf een totaal ander ironing-resultaat dan de
+swatch-test voorspelde. Daarmee is duidelijk: een 20×20-vlakje + meteen ironen geeft een
+**verkeerd beeld** van wat er op een veel groter ironing-oppervlak gebeurt. De flow/speed die
+op een swatch het mooiste resultaat geeft, houdt op een groot vlak geen stand.
 
-**Hypothese (van de gebruiker):** de temperatuur van de toplaag op het moment van
-ironen beïnvloedt het resultaat. Op een 200×200 vlak begint de ironing-pass tientallen
-seconden na het eerste top-infill-spoor, dus een deel is al koud en een deel nog week.
-Op een swatch van ~10 mm is alles nog warm.
+## Waarom waarschijnlijk: de starttemperatuur verschilt
 
-**Concurrerende verklaring (drukverval):** ironing extrudeert bij 10–50% flow extreem
-weinig. Op een korte swatch teert de pass nog op de restdruk in de nozzle van het
-top-infill; op een lang pad zakt die druk in en irone je aan het eind droog. Dit ziet
-er visueel bijna identiek uit aan "te koud".
+Op een klein vlak is de toplaag nog overal warm als de ironing-pass begint. Op een groot vlak
+begint het ironen tientallen seconden na het eerste top-infill-spoor — de starttemperatuur
+loopt dan sterk uiteen over het oppervlak, en verschilt bovendien per printformaat. Ironing
+is gevoelig voor die starttemperatuur, dus verschuift het optimale flow/speed-punt mee met de
+grootte van het vlak.
 
-**Discriminator:** een koelpauze op een *kleine* swatch. Reproduceert die het probleem
-van het grote vlak → temperatuur. Verandert er niets → het zit in de flow, en dan is
-de fix eerder ironing-flow omhoog + ironing-speed omlaag dan koelen.
+*Concurrerende verklaring (drukverval):* ironing extrudeert bij 10–50% flow extreem weinig.
+Op een korte swatch teert de pass nog op de restdruk in de nozzle van het top-infill; op een
+lang pad zakt die druk in en irone je aan het eind droog. Visueel bijna identiek aan "te koud".
+In het achterhoofd houden, maar de starttemperatuur is de eerste verdachte.
+
+## Doel van dit script: stabiliseren, niet alleen meten
+
+De bedoeling is ironing **reproduceerbaar** maken, onafhankelijk van de vlakgrootte. Door vóór
+elke ironing-pass een **rustperiode** (`G4`-dwell, met de fans aan) in te lassen, start elk
+vlak bij (nagenoeg) dezelfde temperatuur. Dan is wat je op een klein vlak afstelt representatief
+voor een groot vlak. Route naar hetzelfde doel langs de andere kant: via een gelijke
+ironing-snelheid overal een gelijke warmte-inbreng krijgen.
+
+Het dubbelt als **discriminator**: reproduceert een koelpauze op een kleine swatch het probleem
+van het grote vlak → dan is temperatuur de dominante variabele. Verandert er niets → richting
+flow zoeken (ironing-flow omhoog, ironing-speed omlaag).
 
 ## Waarom een post-processing script en niet een Bambu Studio-instelling
 
