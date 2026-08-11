@@ -291,11 +291,16 @@ grep -m5 "FEATURE:" ~/Downloads/plate_1.gcode
   export = PETG, 0.2mm. Bij PETG wil je de part-fan waarschijnlijk lager dan 255 (PETG
   hecht slechter met veel koeling); de restore-waarde in de export stond op ~30% (S76.5).
 - **3MF beschikbaar?** Ja — `~/Downloads/IroningTest-Swatchesv2(4).3mf` (+ oudere kopieën).
+- **Gaat de injectie ook mee bij direct naar de printer sturen?** Ja. Het script draait aan
+  het eind van élke slice op Bambu Studio's interne temp-G-code (`.../bamboo_model/.../.gcode`)
+  — precies het bestand dat vervolgens naar de printer gaat óf geëxporteerd wordt. Dus zowel
+  "Print" als "Export G-code" krijgen de dwell. Bevestigd op 2026-08-11 in het slice-temp.
+- **Live script-pad.** Bambu Studio wijst nu naar de repo-kopie
+  (`~/Projects/3d-printing/ironing-cooldown/ironing_dwell.py`). De kopie in `~/scripts/` is
+  daarmee overbodig; pas op voor divergentie als je er één bewerkt.
 
 ## Nog open
 
 - Is het post-processing script als **eigen process-preset** opgeslagen? Zo niet, dan is het
   vluchtig (zie stap 3).
-- Gaat de injectie ook mee bij **direct naar de printer sturen** (i.p.v. Export G-code)? Nog
-  onverifieerd — check de verzonden file op `cool-down`.
 - Voor de PETG-plaat: is part-fan 255 tijdens de dwell niet te veel (randen/strings)?
