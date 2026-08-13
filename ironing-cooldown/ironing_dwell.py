@@ -20,7 +20,7 @@ import sys
 
 # --- modus & dwell ---
 SEGMENTS   = 5                   # stukken per ironing-pass; 1 = uit (dwell alleen vóór de pass)
-SEG_DWELLS = [0, 5, 10, 15, 20]  # dwell (s) vóór segment 1..N (cumulatief, zie docstring)
+SEG_DWELLS = [0, 20, 40, 80, 160]  # dwell (s) vóór segment 1..N (cumulatief, zie docstring)
 DWELLS     = [20]                # gebruikt als SEGMENTS == 1 (per pass, cyclisch)
 
 # --- mechaniek ---
