@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Ironing-kalibratie — swatch-log</title>
 <style>
-  @page { size: A4 landscape; margin: 8mm; }
+  @page { size: A4 landscape; margin: 6mm; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
@@ -20,27 +20,28 @@
   table.grid th, table.grid td { border: 0.3mm solid #999; text-align: center; }
   .corner { border: none !important; }
   .axis-top { font-size: 8pt; color: #555; font-weight: normal; padding: 0.8mm; }
-  th.colh { width: 33mm; height: 7mm; font-size: 10pt; }
-  th.rowh { width: 14mm; font-size: 10pt; }
-  td.cell { width: 33mm; height: 33mm; position: relative; }
-  td.on   { background: #fff; }
-  td.off  { background: #eee; color: #bbb; }
-  td.off::after { content: "–"; font-size: 12pt; }
+  th.colh { width: 36mm; height: 6mm; font-size: 10pt; }
+  th.rowh { width: 13mm; font-size: 10pt; }
+  td.cell { width: 36mm; height: 36mm; position: relative; background: #fff; }
   .tag { position: absolute; top: 0.6mm; left: 0.8mm; font-size: 6.5pt; color: #888; }
   .cap { font-size: 8pt; color: #555; margin-top: 1.5mm; }
 
+  /* ---- invulvelden ---- */
+  .fld, .hdr {
+    border: none; background: transparent; font: inherit;
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .fld { width: 100%; border-bottom: 0.4mm solid #999; font-size: 9.5pt; padding: 0.5mm; }
+  .fld:focus, .hdr:focus { background: #eefaf0; }
+  .hdr { width: 100%; text-align: center; font-size: 10pt; padding: 0.8mm 0; }
+  .hdr.small { width: 9mm; font-size: 8pt; text-align: center; }
+
   /* ---- info-kolom ---- */
-  h1 { font-size: 14pt; margin: 0 0 0.5mm; }
+  h1 { font-size: 13pt; margin: 0 0 0.5mm; }
   .sub { color: #555; font-size: 8.5pt; margin-bottom: 3mm; }
   .meta { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
   .meta td { padding: 1.2mm 0; vertical-align: bottom; font-size: 9.5pt; }
   .lbl { color: #555; white-space: nowrap; padding-right: 2mm !important; width: 1%; }
-  .fld {
-    width: 100%; border: none; border-bottom: 0.4mm solid #999;
-    background: transparent; font: inherit; font-size: 9.5pt;
-    padding: 0.5mm 0.5mm; outline: none; -webkit-appearance: none; appearance: none;
-  }
-  .fld:focus { border-bottom-color: #2a6; }
   .fixed {
     border: 0.3mm solid #bbb; border-radius: 1.5mm;
     padding: 2mm 3mm; margin-bottom: 4mm; font-size: 8.8pt; color: #333;
@@ -49,10 +50,11 @@
   .legend { font-size: 8.8pt; color: #333; margin-bottom: 4mm; }
   .bar { display: flex; border: 0.3mm solid #999; margin: 1.5mm 0; }
   .bar div {
-    flex: 1; text-align: center; padding: 1mm 0; font-size: 7.5pt;
+    flex: 1; text-align: center; padding: 1mm 0.3mm; font-size: 7pt;
     border-right: 0.3mm solid #999;
   }
   .bar div:last-child { border-right: none; }
+  .bar .cum { color: #555; }
   .arrow { color: #555; font-size: 8pt; }
   .notes b { font-size: 9pt; }
   .noteline { margin-top: 3mm; border-bottom-color: #ccc; }
@@ -67,9 +69,9 @@
 </head>
 <body>
 <div class="hint">
-  Printen: A4 · <b>liggend</b> · schaal 100% (niet "passend maken") ·
-  <b>achtergrondafbeeldingen aan</b> (anders geen grijze arcering). Cellen zijn 33 mm.
-  Velden kun je in de browser typen vóór het printen — geen pen nodig.
+  Printen: A4 · <b>liggend</b> · schaal 100% (niet "passend maken"). Cellen zijn 36 mm.
+  Vul de velden in de browser vóór het printen — speed/flow-koppen en dwell-waarden passen
+  de cel-labels automatisch aan (dit is enkel het log-vel; het script zelf staat los).
 </div>
 
 <div class="sheet">
@@ -81,53 +83,62 @@
       </tr>
       <tr>
         <td class="corner"></td>
-        <th class="colh">10</th><th class="colh">20</th><th class="colh">30</th>
-        <th class="colh">40</th><th class="colh">50</th>
+        <th class="colh"><input class="hdr flw" value="10"></th>
+        <th class="colh"><input class="hdr flw" value="20"></th>
+        <th class="colh"><input class="hdr flw" value="30"></th>
+        <th class="colh"><input class="hdr flw" value="40"></th>
+        <th class="colh"><input class="hdr flw" value="50"></th>
       </tr>
       <tr>
-        <th class="rowh">10</th>
-        <td class="cell on"><span class="tag">10 / 10%</span></td>
-        <td class="cell off"></td><td class="cell off"></td><td class="cell off"></td>
-        <td class="cell on"><span class="tag">10 / 50%</span></td>
+        <th class="rowh"><input class="hdr spd" value="50"></th>
+        <td class="cell"><span class="tag" data-r="0" data-c="0"></span></td>
+        <td class="cell"><span class="tag" data-r="0" data-c="1"></span></td>
+        <td class="cell"><span class="tag" data-r="0" data-c="2"></span></td>
+        <td class="cell"><span class="tag" data-r="0" data-c="3"></span></td>
+        <td class="cell"><span class="tag" data-r="0" data-c="4"></span></td>
       </tr>
       <tr>
-        <th class="rowh">20</th>
-        <td class="cell off"></td>
-        <td class="cell on"><span class="tag">20 / 20%</span></td>
-        <td class="cell off"></td>
-        <td class="cell on"><span class="tag">20 / 40%</span></td>
-        <td class="cell off"></td>
+        <th class="rowh"><input class="hdr spd" value="40"></th>
+        <td class="cell"><span class="tag" data-r="1" data-c="0"></span></td>
+        <td class="cell"><span class="tag" data-r="1" data-c="1"></span></td>
+        <td class="cell"><span class="tag" data-r="1" data-c="2"></span></td>
+        <td class="cell"><span class="tag" data-r="1" data-c="3"></span></td>
+        <td class="cell"><span class="tag" data-r="1" data-c="4"></span></td>
       </tr>
       <tr>
-        <th class="rowh">30</th>
-        <td class="cell off"></td><td class="cell off"></td>
-        <td class="cell on"><span class="tag">30 / 30%</span></td>
-        <td class="cell off"></td><td class="cell off"></td>
+        <th class="rowh"><input class="hdr spd" value="30"></th>
+        <td class="cell"><span class="tag" data-r="2" data-c="0"></span></td>
+        <td class="cell"><span class="tag" data-r="2" data-c="1"></span></td>
+        <td class="cell"><span class="tag" data-r="2" data-c="2"></span></td>
+        <td class="cell"><span class="tag" data-r="2" data-c="3"></span></td>
+        <td class="cell"><span class="tag" data-r="2" data-c="4"></span></td>
       </tr>
       <tr>
-        <th class="rowh">40</th>
-        <td class="cell off"></td>
-        <td class="cell on"><span class="tag">40 / 20%</span></td>
-        <td class="cell off"></td>
-        <td class="cell on"><span class="tag">40 / 40%</span></td>
-        <td class="cell off"></td>
+        <th class="rowh"><input class="hdr spd" value="20"></th>
+        <td class="cell"><span class="tag" data-r="3" data-c="0"></span></td>
+        <td class="cell"><span class="tag" data-r="3" data-c="1"></span></td>
+        <td class="cell"><span class="tag" data-r="3" data-c="2"></span></td>
+        <td class="cell"><span class="tag" data-r="3" data-c="3"></span></td>
+        <td class="cell"><span class="tag" data-r="3" data-c="4"></span></td>
       </tr>
       <tr>
-        <th class="rowh">50</th>
-        <td class="cell on"><span class="tag">50 / 10%</span></td>
-        <td class="cell off"></td><td class="cell off"></td><td class="cell off"></td>
-        <td class="cell on"><span class="tag">50 / 50%</span></td>
+        <th class="rowh"><input class="hdr spd" value="10"></th>
+        <td class="cell"><span class="tag" data-r="4" data-c="0"></span></td>
+        <td class="cell"><span class="tag" data-r="4" data-c="1"></span></td>
+        <td class="cell"><span class="tag" data-r="4" data-c="2"></span></td>
+        <td class="cell"><span class="tag" data-r="4" data-c="3"></span></td>
+        <td class="cell"><span class="tag" data-r="4" data-c="4"></span></td>
       </tr>
     </table>
-    <div class="cap">↑ ironing-speed (mm/s) — rijen · lege cellen = niet getest in deze ronde</div>
+    <div class="cap">↑ ironing-speed (mm/s) — rijen</div>
   </div>
 
   <div class="right">
-    <h1>Ironing-kalibratie — swatch-log</h1>
-    <div class="sub">Bambu Lab P2S · laaghoogte 0,2 mm</div>
+    <h1>Ironing-kalibratie</h1>
+    <div class="sub">swatch-log · Bambu Lab P2S · laaghoogte 0,2 mm</div>
 
     <table class="meta">
-      <tr><td class="lbl">Filament (merk/type)</td><td><input class="fld"></td></tr>
+      <tr><td class="lbl">Filament (merk/type/code)</td><td><input class="fld"></td></tr>
       <tr><td class="lbl">Kleur</td><td><input class="fld"></td></tr>
       <tr><td class="lbl">Datum</td><td><input class="fld"></td></tr>
       <tr><td class="lbl">Nozzle-temp</td><td><input class="fld"></td></tr>
@@ -136,20 +147,19 @@
 
     <div class="fixed">
       <b>Vaste instellingen.</b>
-      Swatch 30×30 mm, ~5–6 mm hoog, 10% sparse infill (ca. halve solide ondergrond) ·
-      ironing-patroon zig-zag, spacing 0,15 mm ·
-      <b>dwell (segment-modus):</b> <code>SEG_DWELLS = [0, 20, 40, 80, 160] s</code>
-      → cumulatief per band <b>0 / 20 / 60 / 140 / 300 s</b>.
+      Swatch 35×35 mm, ~5–6 mm hoog, 10% sparse infill (ca. halve solide ondergrond) ·
+      ironing-patroon zig-zag, spacing 0,15 mm.
     </div>
 
     <div class="legend">
-      <b>Verloop binnen één swatch</b> — 5 banden in de ironing-richting; de naadjes markeren de grenzen:
+      <b>Dwell per band</b> (segment-modus, zoals in <code>ironing_dwell.py</code>) —
+      koeling is cumulatief; de naadjes markeren de grenzen:
       <div class="bar">
-        <div>band 1<br>cum 0 s</div>
-        <div>band 2<br>cum 20 s</div>
-        <div>band 3<br>cum 60 s</div>
-        <div>band 4<br>cum 140 s</div>
-        <div>band 5<br>cum 300 s</div>
+        <div>band 1<br><input class="hdr small dwl" value="0"> s<br><span class="cum"></span></div>
+        <div>band 2<br><input class="hdr small dwl" value="20"> s<br><span class="cum"></span></div>
+        <div>band 3<br><input class="hdr small dwl" value="40"> s<br><span class="cum"></span></div>
+        <div>band 4<br><input class="hdr small dwl" value="80"> s<br><span class="cum"></span></div>
+        <div>band 5<br><input class="hdr small dwl" value="160"> s<br><span class="cum"></span></div>
       </div>
       <span class="arrow">warm / net gestreken → langst afgekoeld</span>
     </div>
@@ -162,5 +172,23 @@
     </div>
   </div>
 </div>
+
+<script>
+  function recompute() {
+    const spd = [...document.querySelectorAll('.spd')].map(i => i.value.trim());
+    const flw = [...document.querySelectorAll('.flw')].map(i => i.value.trim());
+    document.querySelectorAll('.tag').forEach(t => {
+      t.textContent = `${spd[+t.dataset.r]} / ${flw[+t.dataset.c]}%`;
+    });
+    let cum = 0;
+    const dwl = document.querySelectorAll('.dwl');
+    document.querySelectorAll('.cum').forEach((el, k) => {
+      cum += parseFloat(dwl[k].value) || 0;
+      el.textContent = `cum ${cum} s`;
+    });
+  }
+  document.addEventListener('input', recompute);
+  recompute();
+</script>
 </body>
 </html>
