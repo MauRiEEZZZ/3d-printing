@@ -33,9 +33,14 @@
   h1 { font-size: 14pt; margin: 0 0 0.5mm; }
   .sub { color: #555; font-size: 8.5pt; margin-bottom: 3mm; }
   .meta { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
-  .meta td { padding: 1.4mm 0; vertical-align: bottom; font-size: 9.5pt; }
+  .meta td { padding: 1.2mm 0; vertical-align: bottom; font-size: 9.5pt; }
   .lbl { color: #555; white-space: nowrap; padding-right: 2mm !important; width: 1%; }
-  .fill { border-bottom: 0.4mm solid #999; }
+  .fld {
+    width: 100%; border: none; border-bottom: 0.4mm solid #999;
+    background: transparent; font: inherit; font-size: 9.5pt;
+    padding: 0.5mm 0.5mm; outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .fld:focus { border-bottom-color: #2a6; }
   .fixed {
     border: 0.3mm solid #bbb; border-radius: 1.5mm;
     padding: 2mm 3mm; margin-bottom: 4mm; font-size: 8.8pt; color: #333;
@@ -50,7 +55,7 @@
   .bar div:last-child { border-right: none; }
   .arrow { color: #555; font-size: 8pt; }
   .notes b { font-size: 9pt; }
-  .notes .line { border-bottom: 0.3mm solid #ccc; height: 6mm; }
+  .noteline { margin-top: 3mm; border-bottom-color: #ccc; }
 
   @media screen {
     body { background: #ccc; padding: 8mm; }
@@ -64,6 +69,7 @@
 <div class="hint">
   Printen: A4 · <b>liggend</b> · schaal 100% (niet "passend maken") ·
   <b>achtergrondafbeeldingen aan</b> (anders geen grijze arcering). Cellen zijn 33 mm.
+  Velden kun je in de browser typen vóór het printen — geen pen nodig.
 </div>
 
 <div class="sheet">
@@ -118,13 +124,14 @@
 
   <div class="right">
     <h1>Ironing-kalibratie — swatch-log</h1>
-    <div class="sub">Bambu Lab P2S · laaghoogte 0,2 mm · nozzle 220 °C</div>
+    <div class="sub">Bambu Lab P2S · laaghoogte 0,2 mm</div>
 
     <table class="meta">
-      <tr><td class="lbl">Filament (merk/type)</td><td class="fill"></td></tr>
-      <tr><td class="lbl">Kleur</td><td class="fill"></td></tr>
-      <tr><td class="lbl">Datum</td><td class="fill"></td></tr>
-      <tr><td class="lbl">Bed-temp</td><td class="fill"></td></tr>
+      <tr><td class="lbl">Filament (merk/type)</td><td><input class="fld"></td></tr>
+      <tr><td class="lbl">Kleur</td><td><input class="fld"></td></tr>
+      <tr><td class="lbl">Datum</td><td><input class="fld"></td></tr>
+      <tr><td class="lbl">Nozzle-temp</td><td><input class="fld"></td></tr>
+      <tr><td class="lbl">Bed-temp</td><td><input class="fld"></td></tr>
     </table>
 
     <div class="fixed">
@@ -149,9 +156,9 @@
 
     <div class="notes">
       <b>Notities / waarnemingen</b>
-      <div class="line"></div>
-      <div class="line"></div>
-      <div class="line"></div>
+      <input class="fld noteline">
+      <input class="fld noteline">
+      <input class="fld noteline">
     </div>
   </div>
 </div>
