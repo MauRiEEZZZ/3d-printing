@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Ironing-kalibratie — swatch-log</title>
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111; font-size: 10pt; line-height: 1.35;
+  }
+  .sheet { display: flex; gap: 6mm; align-items: flex-start; }
+  .left  { flex: none; }
+  .right { flex: 1; }
+
+  /* ---- matrix ---- */
+  table.grid { border-collapse: collapse; }
+  table.grid th, table.grid td { border: 0.3mm solid #999; text-align: center; }
+  .corner { border: none !important; }
+  .axis-top { font-size: 8pt; color: #555; font-weight: normal; padding: 0.8mm; }
+  th.colh { width: 33mm; height: 7mm; font-size: 10pt; }
+  th.rowh { width: 14mm; font-size: 10pt; }
+  td.cell { width: 33mm; height: 33mm; position: relative; }
+  td.on   { background: #fff; }
+  td.off  { background: #eee; color: #bbb; }
+  td.off::after { content: "–"; font-size: 12pt; }
+  .tag { position: absolute; top: 0.6mm; left: 0.8mm; font-size: 6.5pt; color: #888; }
+  .cap { font-size: 8pt; color: #555; margin-top: 1.5mm; }
+
+  /* ---- info-kolom ---- */
+  h1 { font-size: 14pt; margin: 0 0 0.5mm; }
+  .sub { color: #555; font-size: 8.5pt; margin-bottom: 3mm; }
+  .meta { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
+  .meta td { padding: 1.4mm 0; vertical-align: bottom; font-size: 9.5pt; }
+  .lbl { color: #555; white-space: nowrap; padding-right: 2mm !important; width: 1%; }
+  .fill { border-bottom: 0.4mm solid #999; }
+  .fixed {
+    border: 0.3mm solid #bbb; border-radius: 1.5mm;
+    padding: 2mm 3mm; margin-bottom: 4mm; font-size: 8.8pt; color: #333;
+  }
+  .fixed b { color: #111; }
+  .legend { font-size: 8.8pt; color: #333; margin-bottom: 4mm; }
+  .bar { display: flex; border: 0.3mm solid #999; margin: 1.5mm 0; }
+  .bar div {
+    flex: 1; text-align: center; padding: 1mm 0; font-size: 7.5pt;
+    border-right: 0.3mm solid #999;
+  }
+  .bar div:last-child { border-right: none; }
+  .arrow { color: #555; font-size: 8pt; }
+  .notes b { font-size: 9pt; }
+  .notes .line { border-bottom: 0.3mm solid #ccc; height: 6mm; }
+
+  @media screen {
+    body { background: #ccc; padding: 8mm; }
+    .sheet { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,.3); padding: 8mm; width: 281mm; }
+    .hint { font-size: 12px; color: #333; margin-bottom: 8px; }
+  }
+  @media print { .hint { display: none; } }
+</style>
+</head>
+<body>
+<div class="hint">
+  Printen: A4 · <b>liggend</b> · schaal 100% (niet "passend maken") ·
+  <b>achtergrondafbeeldingen aan</b> (anders geen grijze arcering). Cellen zijn 33 mm.
+</div>
+
+<div class="sheet">
+  <div class="left">
+    <table class="grid">
+      <tr>
+        <td class="corner"></td>
+        <th class="corner axis-top" colspan="5">ironing-flow (%) →</th>
+      </tr>
+      <tr>
+        <td class="corner"></td>
+        <th class="colh">10</th><th class="colh">20</th><th class="colh">30</th>
+        <th class="colh">40</th><th class="colh">50</th>
+      </tr>
+      <tr>
+        <th class="rowh">10</th>
+        <td class="cell on"><span class="tag">10 / 10%</span></td>
+        <td class="cell off"></td><td class="cell off"></td><td class="cell off"></td>
+        <td class="cell on"><span class="tag">10 / 50%</span></td>
+      </tr>
+      <tr>
+        <th class="rowh">20</th>
+        <td class="cell off"></td>
+        <td class="cell on"><span class="tag">20 / 20%</span></td>
+        <td class="cell off"></td>
+        <td class="cell on"><span class="tag">20 / 40%</span></td>
+        <td class="cell off"></td>
+      </tr>
+      <tr>
+        <th class="rowh">30</th>
+        <td class="cell off"></td><td class="cell off"></td>
+        <td class="cell on"><span class="tag">30 / 30%</span></td>
+        <td class="cell off"></td><td class="cell off"></td>
+      </tr>
+      <tr>
+        <th class="rowh">40</th>
+        <td class="cell off"></td>
+        <td class="cell on"><span class="tag">40 / 20%</span></td>
+        <td class="cell off"></td>
+        <td class="cell on"><span class="tag">40 / 40%</span></td>
+        <td class="cell off"></td>
+      </tr>
+      <tr>
+        <th class="rowh">50</th>
+        <td class="cell on"><span class="tag">50 / 10%</span></td>
+        <td class="cell off"></td><td class="cell off"></td><td class="cell off"></td>
+        <td class="cell on"><span class="tag">50 / 50%</span></td>
+      </tr>
+    </table>
+    <div class="cap">↑ ironing-speed (mm/s) — rijen · lege cellen = niet getest in deze ronde</div>
+  </div>
+
+  <div class="right">
+    <h1>Ironing-kalibratie — swatch-log</h1>
+    <div class="sub">Bambu Lab P2S · laaghoogte 0,2 mm · nozzle 220 °C</div>
+
+    <table class="meta">
+      <tr><td class="lbl">Filament (merk/type)</td><td class="fill"></td></tr>
+      <tr><td class="lbl">Kleur</td><td class="fill"></td></tr>
+      <tr><td class="lbl">Datum</td><td class="fill"></td></tr>
+      <tr><td class="lbl">Bed-temp</td><td class="fill"></td></tr>
+    </table>
+
+    <div class="fixed">
+      <b>Vaste instellingen.</b>
+      Swatch 30×30 mm, ~5–6 mm hoog, 10% sparse infill (ca. halve solide ondergrond) ·
+      ironing-patroon zig-zag, spacing 0,15 mm ·
+      <b>dwell (segment-modus):</b> <code>SEG_DWELLS = [0, 20, 40, 80, 160] s</code>
+      → cumulatief per band <b>0 / 20 / 60 / 140 / 300 s</b>.
+    </div>
+
+    <div class="legend">
+      <b>Verloop binnen één swatch</b> — 5 banden in de ironing-richting; de naadjes markeren de grenzen:
+      <div class="bar">
+        <div>band 1<br>cum 0 s</div>
+        <div>band 2<br>cum 20 s</div>
+        <div>band 3<br>cum 60 s</div>
+        <div>band 4<br>cum 140 s</div>
+        <div>band 5<br>cum 300 s</div>
+      </div>
+      <span class="arrow">warm / net gestreken → langst afgekoeld</span>
+    </div>
+
+    <div class="notes">
+      <b>Notities / waarnemingen</b>
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

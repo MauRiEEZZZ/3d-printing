@@ -45,6 +45,9 @@ swatch ziet.
   de G-code zichtbaar is wat door het script is toegevoegd.
 - `ironing-dwell-handoff.md` — volledige achtergrond, ontwerpkeuzes, geverifieerde feiten
   en volgende stappen.
+- `swatch-log-sheet.html` — print-klaar A4 (liggend) log-vel: open in de browser en print
+  (achtergrondafbeeldingen aan). 5×5 matrix speed × flow waarin je de geprinte swatches
+  plakt, plus invulvelden voor filament/kleur/datum en een legenda voor het dwell-verloop.
 
 ### Status
 
